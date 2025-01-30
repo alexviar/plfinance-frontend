@@ -1,0 +1,32 @@
+# Node modules y dependencias instaladas
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Archivos de configuración y dependencias específicas de la máquina
+.DS_Store
+.env
+.env.local
+.env.example
+.vscode
+.idea
+*.swp
+
+# Archivos de construcción y salida
+dist
+build
+.cache
+.eslintcache
+
+# Git y otros archivos de control de versiones
+.git
+.gitignore
+
+# Docker y contenedores
+.dockerignore
+docker-compose.override.yml
+
+# Logs y archivos temporales
+logs
+*.log
