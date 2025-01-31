@@ -1,12 +1,6 @@
 import { appApi } from "../../commons/api/appApi";
 import { Paginated } from "../../commons/api/types";
-
-export type Device = {
-  id: number
-  imei: string
-  isLocked: boolean
-  isReleased: boolean
-}
+import { Device } from "../devices/devicesApi";
 
 export enum InstallmentStatuses {
   Pending = 1,
@@ -70,7 +64,7 @@ const purchasesApi = appApi.enhanceEndpoints({
       },
     }),
 
-    getPurchase: build.query({
+    getPurchase: build.query<Purchase, number>({
       query: (id) => ({
         url: `api/purchases/${id}`
       }),
@@ -114,6 +108,7 @@ const purchasesApi = appApi.enhanceEndpoints({
 export const {
   useGetPurchasesQuery,
   useGetPurchaseQuery,
+  useLazyGetPurchaseQuery,
   useCreatePurchaseMutation,
   useUpdatePurchaseMutation,
   useDeletePurchaseMutation

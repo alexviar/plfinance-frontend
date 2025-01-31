@@ -58,7 +58,7 @@ const PurchasesList = () => {
         <h1 className="text-3xl font-bold text-[#171717]">Ventas a Crédito</h1>
         <button
           onClick={() => setShowPurchaseForm(true)}
-          className="fixed bottom-6 right-6 bg-[#171717] text-white p-4 rounded-full shadow-xl hover:scale-105 transition-transform"
+          className="z-999 fixed bottom-6 right-6 bg-[#171717] text-white p-4 rounded-full shadow-xl hover:scale-105 transition-transform"
         >
           <FaPlus className="w-6 h-6" />
         </button>

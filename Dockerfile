@@ -1,29 +1,18 @@
-# Usar una imagen base de Node.js
-FROM node:18-alpine
+FROM node:18-alpine as builder
 
-# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Copiar el package.json y package-lock.json
 COPY package*.json ./
 
-# Instalar las dependencias de React
-RUN npm install --production
+RUN npm install
 
-# Copiar el resto de los archivos del proyecto
 COPY . .
 
-# Crear la build de producción
 RUN npm run build
 
-# Usar Nginx para servir los archivos estáticos de React
 FROM nginx:alpine
 
-# Copiar los archivos construidos por React al contenedor de Nginx
-COPY --from=0 /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 
-# Exponer el puerto de Nginx
 EXPOSE 80
-
-# Iniciar Nginx
-CMD ["nginx", "-g", "daemon off;"]

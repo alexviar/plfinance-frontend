@@ -89,10 +89,10 @@ export const PurchaseListItem = ({ item, isExpanded, onClick }: Props) => {
             < div className="mb-4 p-3 bg-neutral-50 rounded-lg">
               <h4 className="text-sm font-medium text-[#171717] mb-2">Información del dispositivo</h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
+                {/* <div>
                   <p className="text-neutral-500">IMEI</p>
                   <p className="text-[#171717]">{device.imei}</p>
-                </div>
+                </div> */}
                 <div>
                   <p className="text-neutral-500">Estado</p>
                   <p className={`font-medium ${device.isLocked ? 'text-red-600' : 'text-green-600'}`}>
