@@ -15,8 +15,11 @@ const staggeredBaseQuery = retry((async (args, api, extraOptions) => {
   }
   if (args.body && !(args.body instanceof FormData)) args.body = keysToUnderscore(args.body)
 
-
   const result = await baseQuery(args, api, extraOptions)
+
+  if (result.error && result.meta?.request.method !== 'GET') {
+    retry.fail(result.error, result.meta)
+  }
 
   const status = result.error?.status
   if (status === 401) {
