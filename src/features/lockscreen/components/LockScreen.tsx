@@ -3,7 +3,7 @@ import { LuLock, LuPhone, LuCreditCard, LuKey } from "react-icons/lu"
 
 export default function LockScreen() {
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [isUnlocking, setIsUnlocking] = useState(false)
+  const [isUnlocking, _] = useState(false)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -16,14 +16,16 @@ export default function LockScreen() {
   }, [])
 
   const handleUnlock = () => {
-    setIsUnlocking(true)
-    setTimeout(() => setIsUnlocking(false), 2000) // Reset after 2 seconds
+    (window as any).ReactNativeWebView.postMessage(JSON.stringify({ event: 'unlock' }))
+    localStorage.setItem('locked', '')
+    // setIsUnlocking(true)
+    // setTimeout(() => setIsUnlocking(false), 2000) // Reset after 2 seconds
   }
 
   return (
     <div className="h-screen w-full bg-gradient-to-b from-primary to-primary/90 flex flex-col items-center justify-between px-6 py-12 text-white overflow-hidden">
       {/* Hora y fecha */}
-      <div className="text-center mt-12">
+      <div className="text-center">
         <h1 className="text-6xl font-bold tracking-tight">
           {currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </h1>
@@ -37,7 +39,7 @@ export default function LockScreen() {
         <LuLock size={48} className="mx-auto mb-6 text-white/80" />
         <h2 className="text-3xl font-bold mb-3">Dispositivo bloqueado</h2>
         <p className="text-lg mb-8 text-white/80">Por favor, regularice su pago para desbloquear</p>
-        <div className="space-y-4">
+        <div className="space-y-4 mb-4">
           <button
             type="button"
             className="w-64 bg-white text-primary px-6 py-3 rounded-full font-bold flex items-center justify-center mx-auto hover:bg-opacity-90 transition-colors focus:outline-none focus:ring-4 focus:ring-white/50"
