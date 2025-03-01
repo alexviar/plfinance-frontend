@@ -16,7 +16,6 @@ type Step = 'form' | 'qr';
 
 const schema = yup.object().shape({
   customer: yup.string().required('El nombre del cliente es requerido'),
-  phoneModel: yup.string().required('El modelo del teléfono es requerido'),
   total: yup
     .number()
     .typeError('El monto debe ser un número válido')
@@ -25,16 +24,24 @@ const schema = yup.object().shape({
   installments: yup
     .number()
     .typeError('Selecciona un número válido de cuotas')
-    .required()
-    .oneOf([3, 6, 9, 12], 'Selecciona un número de cuotas válido'),
+    .required(),
   startDate: yup
     .date()
     .typeError('Fecha inválida')
-    .required('La fecha de inicio es requerida')
-  // .min(new Date(), 'La fecha no puede ser anterior al día actual')
+    .required('La fecha de inicio es requerida'),
+  deviceBrand: yup.string().required('La marca del dispositivo es requerida'),
+  deviceModel: yup.string().required('El modelo del dispositivo es requerido'),
+  // deviceImei1: yup.string()
+  //   .required('El IMEI es requerido')
+  //   .matches(/^\d{15}$/, 'El IMEI debe tener 15 dígitos'),
+  // deviceImei2: yup.string()
+  //   .notRequired()
+  //   .matches(/^\d{15}$/, 'El IMEI debe tener 15 dígitos'),
+  deviceSerialNumber: yup.string().required('El número de serie es requerido'),
+  // deviceColor: yup.string().required('El color es requerido'),
 });
 
-type FormValues = typeof schema extends yup.ObjectSchema<infer T> ? T : never
+type FormValues = yup.InferType<typeof schema>
 
 export const PurchaseForm = ({ onClose }: Props) => {
   const [currentStep, setCurrentStep] = useState<Step>('form');
@@ -44,7 +51,6 @@ export const PurchaseForm = ({ onClose }: Props) => {
     handleSubmit,
     formState: { errors },
     setError,
-    watch
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -61,13 +67,19 @@ export const PurchaseForm = ({ onClose }: Props) => {
   })
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
+    console.log(values)
     try {
       await createPurchase({
         amount: values.total,
         purchaseDate: values.startDate.toISOString().split('T')[0],
         customer: values.customer,
-        phoneModel: values.phoneModel,
-        installments: values.installments
+        installments: values.installments,
+
+        device: {
+          brand: values.deviceBrand,
+          model: values.deviceModel,
+          serialNumber: values.deviceSerialNumber
+        }
       }).unwrap()
       setCurrentStep('qr');
     } catch { }
@@ -82,7 +94,7 @@ export const PurchaseForm = ({ onClose }: Props) => {
   }
 
   const qrValue = createPurchaseResult.isSuccess
-    ? createPurchaseResult.data.enrollData
+    ? createPurchaseResult.data.device.enrollmentData
     : '';
 
   return (
@@ -117,78 +129,151 @@ export const PurchaseForm = ({ onClose }: Props) => {
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[#171717] mb-1">
-                  Modelo del Teléfono *
-                </label>
-                <input
-                  {...register('phoneModel')}
-                  className={`w-full p-3 border ${errors.phoneModel ? 'border-red-200' : 'border-neutral-200'
-                    } rounded-lg focus:ring-2 focus:ring-[#171717] focus:border-transparent`}
-                  placeholder="Ej: Xiaomi Redmi Note 13 Pro"
-                />
-                {errors.phoneModel && (
-                  <p className="text-red-500 text-sm mt-1">{errors.phoneModel.message}</p>
-                )}
-              </div>
+              <>
+                <h3 className="text-lg font-bold text-[#171717] mt-6 mb-4">Información del Dispositivo</h3>
 
-              <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#171717] mb-1">
+                      Marca *
+                    </label>
+                    <input
+                      {...register('deviceBrand')}
+                      className={`w-full p-3 border ${errors.deviceModel ? 'border-red-200' : 'border-neutral-200'
+                        } rounded-lg focus:ring-2 focus:ring-[#171717]`}
+                      placeholder="Ej: Samsung"
+                    />
+                    {errors.deviceBrand && (
+                      <p className="text-red-500 text-sm mt-1">{errors.deviceBrand.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#171717] mb-1">
+                      Modelo *
+                    </label>
+                    <input
+                      {...register('deviceModel')}
+                      className={`w-full p-3 border ${errors.deviceModel ? 'border-red-200' : 'border-neutral-200'
+                        } rounded-lg focus:ring-2 focus:ring-[#171717]`}
+                      placeholder="Ej: Galaxy S24 Ultra"
+                    />
+                    {errors.deviceModel && (
+                      <p className="text-red-500 text-sm mt-1">{errors.deviceModel.message}</p>
+                    )}
+                  </div>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-[#171717] mb-1">
-                    Fecha Inicio *
+                    Número de serie *
                   </label>
                   <input
-                    type="date"
-                    {...register('startDate')}
-                    className={`w-full p-3 border ${errors.startDate ? 'border-red-200' : 'border-neutral-200'
-                      } rounded-lg focus:ring-2 focus:ring-[#171717] focus:border-transparent`}
+                    {...register('deviceSerialNumber')}
+                    className={`w-full p-3 border ${errors.deviceSerialNumber ? 'border-red-200' : 'border-neutral-200'
+                      } rounded-lg focus:ring-2 focus:ring-[#171717]`}
                   />
-                  {errors.startDate && (
-                    <p className="text-red-500 text-sm mt-1">{errors.startDate.message}</p>
-                  )}
+                </div>
+
+                {/* <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#171717] mb-1">
+                      IMEI (15 dígitos) *
+                    </label>
+                    <input
+                      {...register('imei1')}
+                      className={`w-full p-3 border ${errors.imei1 ? 'border-red-200' : 'border-neutral-200'
+                        } rounded-lg focus:ring-2 focus:ring-[#171717]`}
+                      maxLength={15}
+                    />
+                    {errors.imei1 && (
+                      <p className="text-red-500 text-sm mt-1">{errors.imei1.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#171717] mb-1">
+                      Número de serie *
+                    </label>
+                    <input
+                      {...register('serialNumber')}
+                      className={`w-full p-3 border ${errors.serialNumber ? 'border-red-200' : 'border-neutral-200'
+                        } rounded-lg focus:ring-2 focus:ring-[#171717]`}
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-[#171717] mb-1">
-                    Cuotas
+                    Color *
                   </label>
-                  <select
-                    {...register('installments')}
-                    className={`w-full p-3 border ${errors.installments ? 'border-red-200' : 'border-neutral-200'
-                      } rounded-lg focus:ring-2 focus:ring-[#171717] focus:border-transparent`}
-                  >
-                    {[3, 6, 9, 12].map(num => (
-                      <option key={num} value={num}>
-                        {num} meses
-                      </option>
-                    ))}
-                  </select>
-                  {errors.installments && (
-                    <p className="text-red-500 text-sm mt-1">{errors.installments.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#171717] mb-1">
-                  Total *
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
-                    $
-                  </span>
                   <input
-                    {...register('total')}
-                    className={`w-full pl-8 pr-3 py-3 border ${errors.total ? 'border-red-200' : 'border-neutral-200'
-                      } rounded-lg focus:ring-2 focus:ring-[#171717] focus:border-transparent`}
-                    placeholder="0.00"
-                    step="0.01"
+                    {...register('color')}
+                    className={`w-full p-3 border ${errors.color ? 'border-red-200' : 'border-neutral-200'
+                      } rounded-lg focus:ring-2 focus:ring-[#171717]`}
                   />
+                </div> */}
+              </>
+              <>
+                <h3 className="text-lg font-bold text-[#171717] mt-6 mb-4">Información de las cuotas</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#171717] mb-1">
+                      Fecha Inicio *
+                    </label>
+                    <input
+                      type="date"
+                      {...register('startDate')}
+                      className={`w-full p-3 border ${errors.startDate ? 'border-red-200' : 'border-neutral-200'
+                        } rounded-lg focus:ring-2 focus:ring-[#171717] focus:border-transparent`}
+                    />
+                    {errors.startDate && (
+                      <p className="text-red-500 text-sm mt-1">{errors.startDate.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#171717] mb-1">
+                      Cuotas *
+                    </label>
+                    <div className="relative">
+                      <input
+                        {...register('installments')}
+                        className={`w-full pr-16 pl-3 py-3 border ${errors.total ? 'border-red-200' : 'border-neutral-200'
+                          } rounded-lg focus:ring-2 focus:ring-[#171717] focus:border-transparent`}
+                        placeholder="0.00"
+                        step="0.01"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
+                        meses
+                      </span>
+                    </div>
+                    {errors.installments && (
+                      <p className="text-red-500 text-sm mt-1">{errors.installments.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#171717] mb-1">
+                      Total *
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+                        MXN
+                      </span>
+                      <input
+                        {...register('total')}
+                        className={`w-full pl-15 pr-3 py-3 border ${errors.total ? 'border-red-200' : 'border-neutral-200'
+                          } rounded-lg focus:ring-2 focus:ring-[#171717] focus:border-transparent`}
+                        placeholder="0.00"
+                        step="0.01"
+                      />
+                    </div>
+                    {errors.total && (
+                      <p className="text-red-500 text-sm mt-1">{errors.total.message}</p>
+                    )}
+                  </div>
                 </div>
-                {errors.total && (
-                  <p className="text-red-500 text-sm mt-1">{errors.total.message}</p>
-                )}
-              </div>
+
+              </>
 
               <button
                 type="submit"
@@ -201,7 +286,7 @@ export const PurchaseForm = ({ onClose }: Props) => {
                     Cargando...
                   </div>
                 ) : (
-                  'Continuar al Registro'
+                  'Registrar'
                 )}
               </button>
             </form>
@@ -227,7 +312,7 @@ export const PurchaseForm = ({ onClose }: Props) => {
 
             <div className="mt-6 text-sm text-neutral-500">
               <p>ID de compra: {createPurchaseResult.data?.id}</p>
-              <p>Dispositivo: {watch('phoneModel')}</p>
+              {/* <p>Dispositivo: {watch('phoneModel')}</p> */}
             </div>
 
             <button

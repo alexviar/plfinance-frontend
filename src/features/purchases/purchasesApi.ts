@@ -32,11 +32,9 @@ export type Purchase = {
   id: number
   purchaseDate: string
   customer: string
-  phoneModel: string
   amount: number
-  device: Device | null
-  paymentPlan: PaymentPlan | null
-  enrollData: string
+  device: Device
+  paymentPlan: PaymentPlan
 }
 
 export type PurchaseFilter = Partial<{
@@ -71,7 +69,7 @@ const purchasesApi = appApi.enhanceEndpoints({
       providesTags: (_, __, id) => [{ type: 'Purchases', id }]
     }),
 
-    createPurchase: build.mutation<Purchase, Omit<Purchase, 'id' | 'device' | 'paymentPlan' | 'enrollData'> & { installments: number }>({
+    createPurchase: build.mutation<Purchase, Omit<Purchase, 'id' | 'device' | 'paymentPlan' | 'enrollData'> & { installments: number, device: Pick<Device, 'brand' | 'model' | 'serialNumber'> }>({
       query: (newPurchase) => ({
         url: 'api/purchases',
         method: 'POST',
